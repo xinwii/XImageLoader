@@ -31,8 +31,12 @@ public class XImageLoader {
     private static XImageLoader xImageLoader;
     private static LinkedBlockingDeque<Runnable> linkedBlockingDeque;
     private static ThreadPoolExecutor executor;
+    private static int width = 0;
+    private static int height = 0;
 
     public static XImageLoader with(Context context) {
+        width = 0;
+        height = 0;
         if (xImageLoader == null)
             synchronized (XImageLoader.class) {
                 if (xImageLoader == null)
@@ -41,8 +45,15 @@ public class XImageLoader {
         return xImageLoader;
     }
 
+    public XImageLoader resize(int width, int height) {
+        this.width = width;
+        this.height = height;
+        return this;
+    }
+
     /**
      * 仿glide加载方式
+     *
      * @param url
      * @return
      */
@@ -52,7 +63,7 @@ public class XImageLoader {
     }
 
     public void into(ImageView imageView) {
-        LoadImageView(url, imageView);
+        LoadImageView(url, imageView,width,height);
     }
 
     private XImageLoader(Context context) {
@@ -82,14 +93,14 @@ public class XImageLoader {
      * @param url
      * @param imageView
      */
-    public static void LoadImageView(String url, ImageView imageView) {
+    public static void LoadImageView(String url, ImageView imageView,int width,int height) {
         Bitmap bitmap = lruCache.get(XImageLoaderUtils.hashKeyFormUrl(url));
         if (bitmap != null) {
             Log.d(TAG, "get bitmap from memory");
             imageView.setImageBitmap(bitmap);
             return;
         }
-        ImageViewData imageData = new ImageViewData(url, imageView, bitmap);
+        ImageViewData imageData = new ImageViewData(url, imageView, bitmap,width,height);
         GetBitmapRunnable getBitmapRunnable = new GetBitmapRunnable(imageData);
         executor.execute(getBitmapRunnable);
     }
